@@ -1,26 +1,26 @@
 class ResultPrinter
-def initialize
-  @status_image = []
+  def initialize
+    @status_image = []
 
-  current_path = File.dirname(__FILE__)
-  counter = 0
+    current_path = File.dirname(__FILE__)
+    counter = 0
 
-  while counter <= 7
-    file_name = current_path + "/image/#{counter}.txt"
+    while counter <= 7
+      file_name = current_path + "/image/#{counter}.txt"
 
-    begin
-      file = File.new(file_name, "r:UTF-8")
-      @status_image << file.read
-      file.close
-    rescue SystemCallError
-      # Если случилась такая ошибка мы продолжаем работать дальше, т.к. без
-      # изображения виселицы вполне можно играть.
-      @status_image << "\n [ изображение не найдено ] \n"
+      begin
+        file = File.new(file_name, "r:UTF-8")
+        @status_image << file.read
+        file.close
+      rescue SystemCallError
+        # Если случилась такая ошибка мы продолжаем работать дальше, т.к. без
+        # изображения виселицы вполне можно играть.
+        @status_image << "\n [ изображение не найдено ] \n"
+      end
+
+      counter += 1
     end
-
-    counter += 1
   end
-end
 
   def print_status(game)
     cls

@@ -7,6 +7,6 @@ class WordReader
     rescue SystemCallError
       abort 'Файл со словами не найден'
     end
-      return lines.sample.chomp
+    return lines.sample.chomp
   end
 end
