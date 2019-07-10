@@ -1,11 +1,11 @@
 class ResultPrinter
-  def initialize
+  def initialize(game)
     @status_image = []
 
     current_path = File.dirname(__FILE__)
     counter = 0
 
-    while counter <= 7
+    while counter <= game.max_errors
       file_name = current_path + "/image/#{counter}.txt"
 
       begin
@@ -13,8 +13,6 @@ class ResultPrinter
         @status_image << file.read
         file.close
       rescue SystemCallError
-        # Если случилась такая ошибка мы продолжаем работать дальше, т.к. без
-        # изображения виселицы вполне можно играть.
         @status_image << "\n [ изображение не найдено ] \n"
       end
 
@@ -24,35 +22,33 @@ class ResultPrinter
 
   def print_status(game)
     cls
-
+    puts game.version
     puts "\nСлово: #{get_word_for_print(game.letters, game.good_letters)}"
     puts "Ошибки (#{game.errors}): #{game.bad_letters.join(", ")}"
 
     print_viselitsa(game.errors)
 
-    if game.errors >= 7
+    if game.lost?
       puts 'Вы проиграли :('
+    elsif game.won?
+      puts "Поздравляем, вы выиграли!\n\n"
     else
-      if game.good_letters.uniq.sort == game.letters.uniq.sort
-        puts "Поздравляем, вы выиграли!\n\n"
-      else
-        puts 'У вас осталось попыток: ' + (7 - game.errors).to_s
-      end
+      puts "У вас осталось попыток: #{game.errors_left}"
     end
   end
 
   def get_word_for_print(letters, good_letters)
     result = ''
 
-    for item in letters do
-      if good_letters.include?(item)
-        result += item + ' '
-      else
-        result += '__ '
-      end
+    letters.each do |letter|
+      result += if good_letters.include?(letter)
+                  letter + ' '
+                else
+                  '__ '
+                end
     end
 
-    return result
+    result
   end
 
   def cls

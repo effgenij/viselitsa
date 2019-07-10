@@ -1,17 +1,29 @@
 class Game
+  attr_reader :errors, :letters, :good_letters, :bad_letters, :status
+  attr_accessor :version
+  MAX_ERRORS = 7
+
   def initialize(slovo)
     @letters = get_letters(slovo)
     @errors = 0
     @good_letters = []
     @bad_letters = []
-    @status = 0
+    @status = :in_progress # :won, :lost
+  end
+
+  def max_errors
+    MAX_ERRORS
+  end
+
+  def errors_left
+    MAX_ERRORS - @errors
   end
 
   def get_letters(slovo)
-    if slovo == nil || slovo == ''
+    if slovo.nil? || slovo == ''
       abort 'Слова нет. Выход из программы'
     end
-    return slovo.upcase.split('')
+    slovo.upcase.split('')
   end
 
   def ask_next_letter
@@ -19,78 +31,69 @@ class Game
 
     letter = ''
 
-    while letter == '' do
-      letter = STDIN.gets.encode('UTF-8').chomp
-    end
+    letter = STDIN.gets.encode('UTF-8').chomp while letter == ''
 
     next_step(letter)
   end
 
-  def next_step(bukva)
-    bukva.upcase!
-    if @status == -1 || @status == 1
-      return
+  def is_good?(letter)
+    letters.include?(letter) ||
+      (letter == "Е" && letters.include?("Ё")) ||
+      (letter == "Ё" && letters.include?("Е")) ||
+      (letter == "И" && letters.include?("Й")) ||
+      (letter == "Й" && letters.include?("И"))
+  end
+
+  def add_letter_to(letters, letter)
+    letters << letter
+
+    case letter
+    when 'И'
+      letters << 'Й'
+    when 'Й'
+      letters << 'и'
+    when 'Е'
+      letters << 'Ё'
+    when 'Ё'
+      letters << 'Е'
     end
+  end
 
-    if @good_letters.include?(bukva) || @bad_letters.include?(bukva)
-      return
-    end
+  def solved?
+    (letters - good_letters).empty?
+  end
 
-    if @letters.include?(bukva) ||
-      (bukva == "Е" && @letters.include?("Ё")) ||
-      (bukva == "Ё" && @letters.include?("Е")) ||
-      (bukva == "И" && @letters.include?("Й")) ||
-      (bukva == "Й" && @letters.include?("И"))
-      @good_letters << bukva
+  def repeated?(letter)
+    good_letters.include?(letter) || bad_letters.include?(letter)
+  end
 
-      if bukva == "И"
-        @good_letters << "Й"
-      end
+  def lost?
+    @status == :lost || @errors >= MAX_ERRORS
+  end
 
-      if bukva == "Й"
-        @good_letters << "И"
-      end
+  def in_progress?
+    @status == :in_progress
+  end
 
-      if bukva == "Е"
-        @good_letters << "Ё"
-      end
+  def won?
+    @status == :won
+  end
 
-      if bukva == "Ё"
-        @good_letters << "Е"
-      end
+  def next_step(letter)
+    letter.upcase!
 
-      if (@letters - @good_letters).empty?
-        @status = 1
-      end
+    return if @status == :lost || @status == :won
+    return if repeated?(letter)
 
+    if is_good?(letter)
+      add_letter_to(good_letters, letter)
+
+      @status = :won if solved?
     else
-      @bad_letters << bukva
+      add_letter_to(bad_letters, letter)
 
       @errors += 1
-
-      if @errors >= 7
-        @status = -1
-      end
+      @status = :lost if lost?
     end
-  end
-
-  def letters
-    @letters
-  end
-
-  def good_letters
-    @good_letters
-  end
-
-  def bad_letters
-    @bad_letters
-  end
-
-  def status
-    @status
-  end
-
-  def errors
-    @errors
   end
 end

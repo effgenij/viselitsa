@@ -2,17 +2,17 @@ require_relative 'game'
 require_relative 'result_printer'
 require_relative 'word_reader'
 
-printer = ResultPrinter.new
+VERSION = "Игра виселица, версия 4\n\n"
 
 reader = WordReader.new
-
 words_file = File.dirname(__FILE__) + "/data/words.txt"
-
 slovo = reader.read_from_file(words_file)
 
 game = Game.new(slovo)
+game.version = VERSION
+printer = ResultPrinter.new(game)
 
-while game.status == 0
+while game.in_progress?
   printer.print_status(game)
   game.ask_next_letter
 end
